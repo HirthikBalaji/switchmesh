@@ -1,0 +1,51 @@
+# SwitchMesh Business Track: Incident War Room Template
+# Room template that binds existing agents with on-call human engineers.
+version: 1
+
+params:
+  incident_id:
+    type: string
+    description: Incident tracking ticket (e.g. INC-8892)
+    default: "INC-8892"
+  service_name:
+    type: string
+    description: Service experiencing degradation (e.g. cart-service)
+    default: "cart-service"
+  oncall_lead:
+    type: user
+    description: Human engineering lead with dual-custody signing authority
+  triager_agent:
+    type: agent
+    description: Agent performing initial telemetry ingestion
+  reproducer_agent:
+    type: agent
+    description: Agent executing isolated chaos reproduction
+  patcher_agent:
+    type: agent
+    description: Agent synthesizing and testing patches
+  sentinel_agent:
+    type: agent
+    description: Agent enforcing guardrails and sign-offs
+  bridge:
+    type: bridge
+    description: Chat platform bridge (Slack, Teams, Discord, Mattermost)
+    default: [$first]
+
+room:
+  name: "WarRoom: {incident_id} ({service_name})"
+  description: "Mission-critical Sev-1 incident room with ephemeral sandbox verification & human sign-off"
+  channel_type: channel_private
+  bridge: "{bridge}"
+  agents: ["{triager_agent}", "{reproducer_agent}", "{patcher_agent}", "{sentinel_agent}"]
+  users: ["{$creator}", "{oncall_lead}"]
+  instructions: |
+    This room resolves incident {incident_id} impacting {service_name}.
+    Rules of engagement:
+    1. All code and reproduction claims must be verified via Ephemeral Sandboxes.
+    2. No rollback or deployment may proceed without explicit sign-off from {oncall_lead}.
+    3. Trust guardrails will redact any leaked secrets or unauthorized commands.
+
+kickoff: |
+  @{triager_agent} @{reproducer_agent} @{patcher_agent} @{sentinel_agent} — Incident war room active.
+  @{triager_agent}: ingest error telemetry for {service_name} and begin triage immediately.
+  @{sentinel_agent}: hold dual-custody gate on production deployments until {oncall_lead} signs off.

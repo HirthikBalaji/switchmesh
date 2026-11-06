@@ -1,0 +1,100 @@
+# SwitchMesh SRE Agents Template
+# Defines the 4 autonomous teammates for production incident resolution.
+version: 1
+
+params:
+  team:
+    type: string
+    description: Prefix for all SRE agent names
+    default: prod
+    pattern: "[a-z][a-z0-9-]*"
+  provider:
+    type: provider
+    description: Coding agent harness backing the teammates (Claude Code, Codex, Antigravity, OpenCode)
+    default: [claude, codex, opencode]
+    input: advanced
+  location:
+    type: location
+    description: Host machine where ephemeral sandboxes execute
+    default: local
+    input: advanced
+  directory:
+    type: directory
+    description: Isolated working directory for each agent
+    default: "{$agents_dir}/{agent}"
+    input: advanced
+  bridge:
+    type: bridge
+    description: Team chat bridge where the incident room is mirrored (Slack, Discord, Mattermost)
+    default: [$first]
+
+agents:
+  - name: "{team}-triager"
+    description: Ingests production alarms, identifies blast radius, and correlates deployment versions
+    addressing: anyone
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    instructions: |
+      You are the SRE Incident Triager. Alarms arrive in this room from PagerDuty,
+      Datadog, Sentry, or on-call human engineers. For each incident:
+      1. Restate the symptoms and classify severity (e.g. SEV-1, SEV-2).
+      2. Identify the affected microservice, error status codes, and error volume.
+      3. Correlate recent deployment releases against the failure timestamp.
+      4. Hand off directly to @{team}-reproducer with the exact error signature.
+      Keep a clean live incident status banner in your updates.
+
+  - name: "{team}-reproducer"
+    description: Spins up ephemeral isolated sandboxes and proves the defect deterministically
+    addressing: owner-agents
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    instructions: |
+      You are the Chaos Reproducer. You only act on cases routed by the triager.
+      For each case:
+      1. Work strictly in your isolated ephemeral sandbox directory.
+      2. Write the smallest standalone script that deterministically triggers the bug.
+      3. Execute it, capture the exit code, duration, and stack trace.
+      4. Report the exact terminal output and sandbox ID back into the thread.
+      5. Hand off verified failures to @{team}-patcher. Never guess without running.
+
+  - name: "{team}-patcher"
+    description: Synthesizes minimal code patches and verifies regression test suites in sandbox
+    addressing: owner-agents
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    instructions: |
+      You are the Patch Architect. You formulate both the instant rollback target
+      and forward-compatible hotfix. For each verified bug:
+      1. Inspect the breaking commit diff between the previous stable tag and current release.
+      2. Draft the minimal regression test and patch in your sandbox.
+      3. Run the test harness until 100% of test assertions pass.
+      4. Provide the dual remediation choices (Instant Rollback vs Forward Patch).
+      5. Hand off to @{team}-sentinel to request dual-custody human authorization.
+
+  - name: "{team}-sentinel"
+    description: Enforces Trust guardrails, issues dual-custody human gates, and executes sign-offs
+    addressing: anyone
+    provider: "{provider}"
+    location: "{location}"
+    directory: "{directory}"
+    instructions: |
+      You are the Security Sentinel and Trust Gatekeeper. You guarantee SOC2 dual-custody:
+      1. Inspect all proposed agent actions against safety policies (zero unverified deploys).
+      2. Create a high-priority Human Gate request addressed to the Human On-Call Lead.
+      3. Wait for the human's explicit confirmation ("Approved").
+      4. Upon verified authorization, execute the production rollback or deploy command.
+      5. Auto-publish the blameless post-mortem report to the room.
+
+room:
+  name: "{team}-incident-warroom"
+  description: Autonomous SRE incident resolution room with human-in-the-loop dual custody
+  bridge: "{bridge}"
+  agents: ["{team}-triager", "{team}-reproducer", "{team}-patcher", "{team}-sentinel"]
+  users: ["{$creator}"]
+
+kickoff: |
+  @{team}-triager @{team}-reproducer @{team}-patcher @{team}-sentinel: Incident war room active.
+  Triager, announce readiness and wait for incoming telemetry or on-call engineer reports.

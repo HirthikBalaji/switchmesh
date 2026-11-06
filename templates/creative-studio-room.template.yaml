@@ -1,0 +1,41 @@
+# SwitchMesh Creative Track: Multi-Room Studio Template
+# Connects Intake Room (Idea brainstorming) with Playtest Room (Live preview & hot-reloading).
+version: 1
+
+params:
+  project_title:
+    type: string
+    description: Working title of the creative project
+    default: "CyberGlitch"
+  bridge:
+    type: bridge
+    description: Platform bridge (Discord, Telegram, Slack)
+    default: [$first]
+
+group:
+  name: "{project_title} Indie Studio"
+  description: Multi-room studio linking brainstorming intake with playtest stage
+
+rooms:
+  - name: "{project_title}-intake"
+    description: Where creator dictates concepts, lore, and visual aesthetics
+    bridge: "{bridge}"
+    agents: ["indie-worldsmith", "indie-audio"]
+    users: ["{$creator}"]
+    kickoff: |
+      @indie-worldsmith and @indie-audio: Concept intake active for {project_title}.
+      Creator: dictate your narrative brief and mechanical direction here.
+
+  - name: "{project_title}-playtest"
+    description: Where the engine compiles, live preview links are posted, and hot-reload tweaks occur
+    bridge: "{bridge}"
+    agents: ["indie-canvas", "indie-critic"]
+    users: ["{$creator}"]
+    kickoff: |
+      @indie-canvas and @indie-critic: Engine stage ready.
+      Live builds will appear here with automated playtest balance scores.
+
+links:
+  - from: "{project_title}-intake"
+    to: "{project_title}-playtest"
+    label: engine_compilation

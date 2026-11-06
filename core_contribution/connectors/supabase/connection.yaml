@@ -1,0 +1,35 @@
+slug: supabase
+name: Supabase
+category: Database & Backend
+description: Query Postgres tables, inspect database schemas, manage auth users, and execute RPC functions with your keys.
+enabled: true
+adapter: api_key
+auth:
+  type: api_key
+  refresh: none
+  api_key:
+    fields:
+      - name: project_ref
+        label: Project Reference ID
+        secret: false
+        help: Found in Project Settings > General > Reference ID (e.g. abcdefghijklmnopqrst).
+      - name: api_key
+        label: Service Role or Anon Key
+        secret: true
+        help: Found in Project Settings > API > Project API keys. Use service_role only if agents should modify tables.
+    identity:
+      method: GET
+      url: "https://{project_ref}.supabase.co/rest/v1/"
+      headers:
+        apikey: "{api_key}"
+        Authorization: "Bearer {api_key}"
+    help_url: https://supabase.com/docs/guides/api
+token: { kind: pass_through, max_lifetime: null }
+mcp:
+  servers:
+    - name: supabase
+      url: "https://mcp.supabase.com/v1"
+      headers:
+        SUPABASE_PROJECT_REF: "{project_ref}"
+        SUPABASE_API_KEY: "{api_key}"
+tools: { mode: pass_through }

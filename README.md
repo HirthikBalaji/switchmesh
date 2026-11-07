@@ -169,6 +169,23 @@ Located in [`core_contribution/`](core_contribution/):
 
 ---
 
+## 📼 Asciinema Terminal Recordings
+
+Every track has a recorded asciicast in [`recordings/`](recordings/) that you can play back directly in your terminal or web player:
+
+```bash
+# Track 1: Autonomous SRE Incident War Room
+asciinema play recordings/track1_sre_warroom.cast
+
+# Track 2: Creative Studio Voice-to-Playable Game Engine
+asciinema play recordings/track2_creative_studio.cast
+
+# Track 3: Supabase Core Contribution & 100% Passing Test Suite
+asciinema play recordings/track3_test_suite.cast
+```
+
+---
+
 ## 📁 Repository Directory Structure
 
 ```text

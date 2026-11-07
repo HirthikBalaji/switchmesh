@@ -1,7 +1,7 @@
 # Beyond the Chatbot: How We Built an Autonomous SRE War Room & Creative Studio with Switch and Verifiable Ephemeral Sandboxes
 
 > **Flip the Switch Hackathon 2026 Entry — Side Track: Best Blog (AirPods 5)**  
-> *Author: Dragon & The SwitchMesh Team*  
+> *Author: Hirthik Balaji & The SwitchMesh Team*  
 > *Published: November 2026*  
 > *Target Tracks: Track 01 ($2,000 Business) · Track 02 ($2,000 Creative) · Track 03 ($100 Core Contribution) · Code with Wispr ($500)*
 
@@ -166,7 +166,7 @@ Instead of typing thousands of lines of prompt templates, YAML parameters, and i
 ### Try It Yourself
 Clone the repo and run the interactive CLI demo:
 ```bash
-git clone https://github.com/<your-username>/switchmesh.git
+git clone https://github.com/HirthikBalaji/switchmesh.git
 cd switchmesh
 python3 demo.py
 ```

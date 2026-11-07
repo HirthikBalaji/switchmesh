@@ -122,7 +122,7 @@ SwitchMesh doesn't just simulate multi-agent turns in the terminal: it connects 
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/switchmesh.git
+git clone https://github.com/HirthikBalaji/switchmesh.git
 cd switchmesh
 
 # Install dependencies (or run directly in your environment)

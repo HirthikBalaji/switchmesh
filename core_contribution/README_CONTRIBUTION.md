@@ -18,7 +18,7 @@ We built the official **Supabase Service Connector**:
 
 2. **Clone your fork and create a branch:**
    ```bash
-   git clone https://github.com/<your-username>/switch.git
+   git clone https://github.com/HirthikBalaji/switch.git
    cd switch
    git checkout -b feat/supabase-connector
    ```

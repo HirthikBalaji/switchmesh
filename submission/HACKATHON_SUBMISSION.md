@@ -2,7 +2,7 @@
 
 > **Project Name:** SwitchMesh: Sovereign Human-Agent War Room & Creative Studio  
 > **Tagline:** Verifiable multi-agent autonomy in team chat with ephemeral sandboxes, dual-custody governance, and voice steering.  
-> **Repository:** `https://github.com/<your-username>/switchmesh`  
+> **Repository:** `https://github.com/HirthikBalaji/switchmesh`  
 > **Demo Video Link:** `https://youtu.be/<your-demo-video>` (or Loom link)  
 > **Blog Post Link:** [Read the full technical deep dive](submission/BLOG_POST.md)  
 > **Wispr Usage Scorecard:** Attached in `wispr_flow/wispr_scorecard.png`
@@ -70,7 +70,7 @@ We created **SwitchMesh** to solve these exact problems. Built directly on the o
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/switchmesh.git
+git clone https://github.com/HirthikBalaji/switchmesh.git
 cd switchmesh
 
 # 2. Run the verification test suite (100% passing)

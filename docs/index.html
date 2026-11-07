@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwitchMesh — Sovereign Multi-Agent War Room & Creative Studio</title>
+    <meta name="description" content="Official Live Demo for SwitchMesh: Sovereign Human-Agent War Room & Creative Studio for the Flip the Switch Hackathon 2026.">
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-card: #0b1120;
+            --bg-card-hover: #111a2e;
+            --border-color: #1e293b;
+            --cyan: #00f3ff;
+            --cyan-glow: rgba(0, 243, 255, 0.25);
+            --magenta: #ff0055;
+            --magenta-glow: rgba(255, 0, 85, 0.25);
+            --purple: #b026ff;
+            --green: #10b981;
+            --yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Navbar */
+        header {
+            background: rgba(11, 17, 32, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+        .logo-badge {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: #000;
+            font-family: var(--font-mono);
+            font-weight: 900;
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+        .brand-title {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+        }
+        .brand-sub {
+            color: var(--cyan);
+            font-size: 13px;
+            font-family: var(--font-mono);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-link:hover { color: var(--cyan); }
+        .pill-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* Hero Banner */
+        .hero {
+            padding: 36px 24px 20px;
+            text-align: center;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .hero-tagline {
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .hero h1 {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 760px;
+            margin: 0 auto 24px;
+        }
+
+        /* Tab Navigation */
+        .tab-bar-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 12px 18px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+        .tab-btn.active {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--cyan);
+            background: rgba(0, 243, 255, 0.04);
+            border-radius: 6px 6px 0 0;
+        }
+        .tab-tag {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .tab-btn.active .tab-tag {
+            background: rgba(0, 243, 255, 0.2);
+            color: var(--cyan);
+        }
+
+        /* Tab Content Area */
+        main {
+            max-width: 1100px;
+            margin: 24px auto 60px;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Shared Card Component */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ========================
+           TAB 1: CREATIVE ARCADE GAME
+           ======================== */
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 40px var(--cyan-glow);
+            border: 2px solid var(--cyan);
+            border-radius: 10px;
+            overflow: hidden;
+            background: #02040a;
+            max-width: 100%;
+        }
+        canvas#gameCanvas {
+            display: block;
+            width: 800px;
+            height: 480px;
+            max-width: 100%;
+            touch-action: none;
+        }
+        #game-hud {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan);
+            pointer-events: none;
+        }
+        .game-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            padding: 10px 16px;
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        .btn-action {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        /* Mobile Virtual Touch Controls */
+        .touch-controls {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        @media (max-width: 768px) {
+            .touch-controls { display: flex; justify-content: space-around; }
+        }
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 44px);
+            grid-template-rows: repeat(3, 44px);
+            gap: 4px;
+        }
+        .dpad-btn {
+            background: #1e293b;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            border-radius: 6px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .dpad-btn:active { background: var(--cyan); color: #000; }
+        .dash-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--cyan));
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            box-shadow: 0 0 20px rgba(176, 38, 255, 0.4);
+            align-self: center;
+        }
+
+        /* Live Hot-Reload Simulator */
+        .hot-reload-box {
+            width: 100%;
+            max-width: 800px;
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .hot-reload-title {
+            font-size: 13px;
+            font-family: var(--font-mono);
+            color: var(--purple);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .preset-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .pill-btn {
+            background: rgba(176, 38, 255, 0.1);
+            border: 1px solid rgba(176, 38, 255, 0.3);
+            color: #d8b4fe;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pill-btn:hover {
+            background: rgba(176, 38, 255, 0.25);
+            border-color: var(--purple);
+            color: #fff;
+        }
+        .voice-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .voice-input {
+            flex: 1;
+            background: #0b1120;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+        .voice-input:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+
+        /* ========================
+           TAB 2: SRE INCIDENT SIM
+           ======================== */
+        .sre-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .sre-dashboard { grid-template-columns: 1fr; }
+        }
+        .chat-room {
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 540px;
+        }
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: #090d16;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .chat-msg {
+            background: #0b1120;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13px;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .chat-msg.alert { border-color: rgba(255, 0, 85, 0.4); background: rgba(255, 0, 85, 0.05); }
+        .chat-msg.triage { border-color: rgba(176, 38, 255, 0.4); }
+        .chat-msg.repro { border-color: rgba(245, 158, 11, 0.4); }
+        .chat-msg.patch { border-color: rgba(0, 243, 255, 0.4); }
+        .chat-msg.gate { border-color: var(--magenta); box-shadow: 0 0 15px var(--magenta-glow); }
+        .chat-msg.resolved { border-color: var(--green); background: rgba(16, 185, 129, 0.05); }
+
+        .msg-author {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .diff-code {
+            background: #010204;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            margin-top: 6px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .diff-del { color: #f87171; }
+        .diff-add { color: #34d399; }
+
+        .sre-controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .metric-card {
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .metric-title {
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .metric-val {
+            font-size: 28px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+        }
+        .metric-val.high { color: var(--magenta); text-shadow: 0 0 10px var(--magenta-glow); }
+        .metric-val.healthy { color: var(--green); text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+
+        .sre-step-btn {
+            background: #0b1120;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sre-step-btn:hover:not(:disabled) {
+            border-color: var(--cyan);
+            background: rgba(0, 243, 255, 0.05);
+        }
+        .sre-step-btn.primary {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: #000;
+            font-weight: 700;
+            border: none;
+        }
+        .sre-step-btn.approve-btn {
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: #fff;
+            border: none;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .sre-step-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ========================
+           TAB 3: SUPABASE CONNECTOR
+           ======================== */
+        .code-container {
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #cbd5e1;
+            white-space: pre;
+        }
+        .query-test-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        /* ========================
+           TAB 4: VIDEO SHOWCASE
+           ======================== */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .video-grid { grid-template-columns: 1fr; }
+        }
+        .video-card {
+            background: #02040a;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .video-card video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+        .video-meta {
+            padding: 14px 16px;
+        }
+        .video-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .video-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            background: #04060c;
+        }
+        footer a { color: var(--cyan); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <a href="#" class="brand">
+            <span class="logo-badge">SWITCH</span>
+            <div>
+                <div class="brand-title">SwitchMesh</div>
+                <div class="brand-sub">Sovereign Human-Agent Mesh</div>
+            </div>
+        </a>
+        <div class="nav-links">
+            <span class="pill-badge">● LIVE DEMO</span>
+            <a href="https://github.com/HirthikBalaji/switchmesh" target="_blank" class="nav-link">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <a href="https://github.com/HirthikBalaji/cart-service-demo" target="_blank" class="nav-link">
+                Demo Repo
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Introduction -->
+    <section class="hero">
+        <div class="hero-tagline">Flip the Switch Hackathon · All 3 Tracks</div>
+        <h1>Verifiable Multi-Agent Autonomy in Team Chat</h1>
+        <p>
+            Experience autonomous SRE incident remediation with ephemeral sandboxes, pure Web Audio 60 FPS indie game generation, and official Switch core service connectors.
+        </p>
+    </section>
+
+    <!-- Tab Navigation -->
+    <div class="tab-bar-container">
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('arcade')">
+                🎮 Play Arcade Game <span class="tab-tag">Track 2</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('sre')">
+                🚨 SRE War Room <span class="tab-tag">Track 1</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('supabase')">
+                🔌 Supabase Connector <span class="tab-tag">Track 3</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('videos')">
+                📼 Video Showcase <span class="tab-tag">MP4</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('wispr')">
+                🎙️ Wispr Voice Playbook <span class="tab-tag">Side Track</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <main>
+
+        <!-- ==============================================
+             TAB 1: CREATIVE STUDIO PLAYABLE GAME (TRACK 2)
+             ============================================== -->
+        <div id="tab-arcade" class="tab-panel active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>CyberGlitch: Mainframe Breach</span>
+                        <span class="pill-badge">60 FPS HTML5 Canvas</span>
+                        <span class="pill-badge" style="color: var(--purple); border-color: rgba(176,38,255,0.4);">Web Audio Synth</span>
+                    </div>
+                    <button class="btn-action" id="audioToggleBtn" onclick="toggleAudio()">
+                        🔊 Sound: ON
+                    </button>
+                </div>
+
+                <div class="game-wrapper">
+                    <div id="game-container">
+                        <canvas id="gameCanvas" width="800" height="480"></canvas>
+                        <div id="game-hud">
+                            <div>CORE: <span id="hud-score">0</span> | LEVEL: <span id="hud-level">1</span></div>
+                            <div>SHIELD: <span id="hud-shield">100%</span> | <span style="color: var(--magenta);">SECTOR ACTIVE</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Controls Info -->
+                    <div class="game-controls-bar">
+                        <span>CONTROLS: <b>[WASD / Arrow Keys]</b> Move | <b>[Spacebar]</b> Quantum Dash | <b>[R]</b> Reboot Core</span>
+                        <button class="btn-action" onclick="restartGame()">↺ Restart</button>
+                    </div>
+
+                    <!-- Mobile Virtual Controls -->
+                    <div class="touch-controls">
+                        <div class="dpad">
+                            <div></div>
+                            <button class="dpad-btn" id="dpad-up">▲</button>
+                            <div></div>
+                            <button class="dpad-btn" id="dpad-left">◀</button>
+                            <div></div>
+                            <button class="dpad-btn" id="dpad-right">▶</button>
+                            <div></div>
+                            <button class="dpad-btn" id="dpad-down">▼</button>
+                            <div></div>
+                        </div>
+                        <button class="dash-btn" id="touch-dash">WARP<br>DASH</button>
+                    </div>
+
+                    <!-- Wispr Voice Hot-Reload Simulator -->
+                    <div class="hot-reload-box">
+                        <div class="hot-reload-title">
+                            <span>⚡ WISPR FLOW VOICE HOT-RELOAD SIMULATOR</span>
+                            <span style="color: var(--cyan); font-size: 11px;">Zero Latency Injection</span>
+                        </div>
+                        <div class="preset-pills">
+                            <button class="pill-btn" onclick="applyTweak('speed')">🎙️ "Boost drone speed (+30%)"</button>
+                            <button class="pill-btn" onclick="applyTweak('particles')">🎙️ "Triple warp particle trails"</button>
+                            <button class="pill-btn" onclick="applyTweak('shield')">🎙️ "Overcharge shield capacity"</button>
+                            <button class="pill-btn" onclick="applyTweak('threat')">🎙️ "Escalate sentinel velocity"</button>
+                        </div>
+                        <div class="voice-input-row">
+                            <input type="text" id="customTweakInput" class="voice-input" placeholder="Dictate mechanic change via Wispr Flow or type here...">
+                            <button class="btn-action" onclick="applyCustomTweak()">Inject Tweak</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 2: SRE INCIDENT WAR ROOM SIMULATOR (TRACK 1)
+             ============================================== -->
+        <div id="tab-sre" class="tab-panel">
+            <div class="sre-dashboard">
+                <!-- Interactive Chat Room -->
+                <div class="chat-room">
+                    <div class="chat-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: var(--cyan);">#incident-war-room</span>
+                            <span class="pill-badge" id="sre-status-pill">MONITORING</span>
+                        </div>
+                        <span style="color: var(--text-muted); font-size: 11px;">Dual-Custody Gate Active</span>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-msg">
+                            <div class="msg-author" style="color: var(--cyan);">
+                                <span>Switch Room Harness</span>
+                                <span style="color: var(--text-muted);">09:00:00</span>
+                            </div>
+                            Incident war room initialized for service <code>cart-service</code>. Ephemeral sandbox runner attached.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls & Live Telemetry Panel -->
+                <div class="sre-controls-panel">
+                    <div class="metric-card">
+                        <div class="metric-title">CLUSTER 500 ERROR RATE</div>
+                        <div class="metric-val" id="metric-error-rate">0.02%</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="metric-sub">Healthy state</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-title">MEAN TIME TO RECOVER (MTTR)</div>
+                        <div class="metric-val" style="color: var(--cyan);" id="metric-mttr">0m 00s</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Target: &lt; 5m 00s</div>
+                    </div>
+
+                    <button class="sre-step-btn primary" id="btn-step-1" onclick="sreStep1()">
+                        🚨 1. Trigger SEV-1 Alert
+                    </button>
+                    <button class="sre-step-btn" id="btn-step-2" onclick="sreStep2()" disabled>
+                        🔍 2. Triager Correlation
+                    </button>
+                    <button class="sre-step-btn" id="btn-step-3" onclick="sreStep3()" disabled>
+                        🧪 3. Ephemeral Sandbox Repro
+                    </button>
+                    <button class="sre-step-btn" id="btn-step-4" onclick="sreStep4()" disabled>
+                        🛠️ 4. Patch & Regression Tests
+                    </button>
+                    <button class="sre-step-btn approve-btn" id="btn-step-5" onclick="sreStep5()" disabled>
+                        🔒 5. Dual-Custody Sign-Off
+                    </button>
+                    <button class="btn-action" style="justify-content: center;" onclick="resetSRE()">
+                        ↺ Reset Simulation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 3: SUPABASE CORE CONNECTOR (TRACK 3)
+             ============================================== -->
+        <div id="tab-supabase" class="tab-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>Track 3: Supabase Service Connector</span>
+                        <span class="pill-badge">sandbox-quantum/switch</span>
+                    </div>
+                    <a href="https://github.com/HirthikBalaji/switchmesh/tree/main/core_contribution" target="_blank" class="btn-action">
+                        View Code on GitHub ↗
+                    </a>
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+                    Official catalog spec and MCP skill submitted to Switch Core to give AI teammates native Postgres inspection, table querying, and RPC execution directly inside chat.
+                </p>
+
+                <div class="code-container" id="yamlViewer">slug: supabase
+name: Supabase
+category: Database & Backend
+description: Query Postgres tables, inspect database schemas, manage auth users, and execute RPC functions with your keys.
+enabled: true
+adapter: api_key
+auth:
+  type: api_key
+  refresh: none
+  api_key:
+    fields:
+      - name: project_ref
+        label: Project Reference ID
+        secret: false
+        help: Found in Project Settings > General > Reference ID.
+      - name: api_key
+        label: Service Role or Anon Key
+        secret: true
+        help: Found in Project Settings > API > Project API keys.
+    identity:
+      method: GET
+      url: "https://{project_ref}.supabase.co/rest/v1/"
+      headers:
+        apikey: "{api_key}"
+        Authorization: "Bearer {api_key}"
+    help_url: https://supabase.com/docs/guides/api
+token: { kind: pass_through, max_lifetime: null }
+mcp:
+  servers:
+    - name: supabase
+      url: "https://mcp.supabase.com/v1"
+      headers:
+        SUPABASE_PROJECT_REF: "{project_ref}"
+        SUPABASE_API_KEY: "{api_key}"
+tools: { mode: pass_through }</div>
+
+                <div class="query-test-panel">
+                    <button class="btn-action" onclick="simulateMcpTool('query_database')">
+                        ⚡ Tool: query_database
+                    </button>
+                    <button class="btn-action" onclick="simulateMcpTool('list_tables')">
+                        ⚡ Tool: list_tables
+                    </button>
+                    <button class="btn-action" onclick="simulateMcpTool('inspect_schema')">
+                        ⚡ Tool: inspect_schema
+                    </button>
+                    <button class="btn-action" onclick="simulateMcpTool('get_project_health')">
+                        ⚡ Tool: get_project_health
+                    </button>
+                </div>
+                <div id="mcpOutput" style="margin-top: 12px; display: none;" class="code-container"></div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 4: VIDEO SHOWCASE (MP4)
+             ============================================== -->
+        <div id="tab-videos" class="tab-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>Embedded High-Definition MP4 Demonstrations</span>
+                        <span class="pill-badge">H.264 · 30 FPS · Faststart</span>
+                    </div>
+                    <span style="color: var(--text-muted); font-size: 12px;">Rendered via agg + FFmpeg</span>
+                </div>
+
+                <div class="video-grid">
+                    <div class="video-card">
+                        <video controls preload="metadata" poster="">
+                            <source src="videos/switchmesh_full_demo.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-meta">
+                            <div class="video-title">Full Combined Showcase (All 3 Tracks)</div>
+                            <div class="video-desc">Duration: 47s · Incident War Room + Creative Studio + Supabase Spec</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <video controls preload="metadata">
+                            <source src="videos/track1_sre_warroom.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-meta">
+                            <div class="video-title">Track 1: SRE Incident War Room</div>
+                            <div class="video-desc">Duration: 19s · Triage, sandbox repro, hotfix diff & dual-custody rollback</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <video controls preload="metadata">
+                            <source src="videos/track2_creative_studio.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-meta">
+                            <div class="video-title">Track 2: Creative Studio Game Engine</div>
+                            <div class="video-desc">Duration: 18s · Wispr voice brief, Web Audio synth & live hot-reload</div>
+                        </div>
+                    </div>
+
+                    <div class="video-card">
+                        <video controls preload="metadata">
+                            <source src="videos/track3_test_suite.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-meta">
+                            <div class="video-title">Track 3: Supabase Connector & Tests</div>
+                            <div class="video-desc">Duration: 10s · 12/12 passing test suite verified in 0.79s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 5: WISPR VOICE PLAYBOOK
+             ============================================== -->
+        <div id="tab-wispr" class="tab-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>Code with Wispr Flow: Voice-First Autonomous Engineering</span>
+                        <span class="pill-badge" style="color: var(--purple); border-color: rgba(176,38,255,0.4);">$500 Track</span>
+                    </div>
+                    <a href="https://github.com/HirthikBalaji/switchmesh/tree/main/wispr_flow" target="_blank" class="btn-action">
+                        View Playbook ↗
+                    </a>
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+                    Every single room template, agent persona prompt, and dual-custody rollback decision in SwitchMesh was steered via spoken voice dictation using <b>Wispr Flow Pro</b>.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                    <div style="background: #02040a; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                        <div style="color: var(--cyan); font-weight: 700; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px;">
+                            🚨 Production Rollback Sign-Off
+                        </div>
+                        <div style="font-style: italic; color: #e2e8f0; font-size: 13px;">
+                            "Approved. Roll it back to v2.13.2 immediately and post the blameless post-mortem."
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+                            Triggered from mobile via Telegram while on call.
+                        </div>
+                    </div>
+
+                    <div style="background: #02040a; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                        <div style="color: var(--purple); font-weight: 700; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px;">
+                            🎮 Creative Studio Game Concept
+                        </div>
+                        <div style="font-style: italic; color: #e2e8f0; font-size: 13px;">
+                            "Let's build CyberGlitch: Mainframe Breach — a retro neon hack-and-evade game with chiptune audio, momentum physics, and hunter-killer firewalls."
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+                            Instantly synthesized into Game Bible & Web Audio oscillators.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>
+            SwitchMesh · Built for the <b>Flip the Switch Hackathon</b> (Nov 4–7, 2026) · 
+            <a href="https://github.com/HirthikBalaji/switchmesh" target="_blank">GitHub Repository</a> · 
+            <a href="https://github.com/HirthikBalaji/cart-service-demo" target="_blank">Live Demo Repo</a>
+        </p>
+    </footer>
+
+    <!-- ==============================================
+         SCRIPT: TABS, WEBAUDIO, ARCADE GAME, & SRE SIM
+         ============================================== -->
+    <script>
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if (targetBtn) targetBtn.classList.add('active');
+
+            const targetPanel = document.getElementById('tab-' + tabId);
+            if (targetPanel) targetPanel.classList.add('active');
+        }
+
+        // Web Audio API Synthesizer
+        let audioCtx = null;
+        let audioEnabled = true;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            document.getElementById('audioToggleBtn').innerText = audioEnabled ? '🔊 Sound: ON' : '🔇 Sound: MUTED';
+        }
+
+        function sfxCollect() {
+            if (!audioEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.12);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } catch (e) {}
+        }
+
+        function sfxDash() {
+            if (!audioEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.18);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            } catch (e) {}
+        }
+
+        function sfxExplosion() {
+            if (!audioEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) {}
+        }
+
+        function sfxWinLevel() {
+            if (!audioEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + (idx + 1) * 0.08);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + (idx + 1) * 0.08);
+                });
+            } catch (e) {}
+        }
+
+        // ==============================================
+        // CANVAS 60 FPS GAME ENGINE
+        // ==============================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const hudScore = document.getElementById('hud-score');
+        const hudLevel = document.getElementById('hud-level');
+        const hudShield = document.getElementById('hud-shield');
+
+        let score = 0;
+        let level = 1;
+        let shield = 100;
+        let gameOver = false;
+        let keys = {};
+        let particles = [];
+        let particleTrailMultiplier = 1;
+
+        const player = {
+            x: 400,
+            y: 240,
+            radius: 14,
+            vx: 0,
+            vy: 0,
+            speed: 5.0,
+            friction: 0.88,
+            dashCooldown: 0
+        };
+
+        let nodes = [];
+        function spawnNodes(count) {
+            nodes = [];
+            for (let i = 0; i < count; i++) {
+                nodes.push({
+                    x: Math.random() * (canvas.width - 80) + 40,
+                    y: Math.random() * (canvas.height - 80) + 40,
+                    radius: 7,
+                    pulse: Math.random() * Math.PI
+                });
+            }
+        }
+
+        let sentinels = [];
+        function spawnSentinels(count) {
+            sentinels = [];
+            for (let i = 0; i < count; i++) {
+                sentinels.push({
+                    x: (i % 2 === 0) ? 60 : canvas.width - 60,
+                    y: Math.random() * (canvas.height - 100) + 50,
+                    radius: 16,
+                    vx: (Math.random() - 0.5) * (2.2 + level * 0.5),
+                    vy: (Math.random() - 0.5) * (2.2 + level * 0.5)
+                });
+            }
+        }
+
+        function createExplosion(x, y, color, count = 16) {
+            const actualCount = Math.round(count * particleTrailMultiplier);
+            for (let i = 0; i < actualCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1.0,
+                    decay: Math.random() * 0.03 + 0.02,
+                    color
+                });
+            }
+        }
+
+        // Keyboard Inputs
+        window.addEventListener('keydown', e => {
+            keys[e.key.toLowerCase()] = true;
+            if (e.key === ' ' && player.dashCooldown <= 0 && !gameOver) {
+                player.vx *= 3.0;
+                player.vy *= 3.0;
+                player.dashCooldown = 30;
+                createExplosion(player.x, player.y, '#00f3ff', 14);
+                sfxDash();
+            }
+            if (e.key.toLowerCase() === 'r' && gameOver) {
+                restartGame();
+            }
+        });
+        window.addEventListener('keyup', e => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Touch Inputs for mobile
+        function setupTouch() {
+            const bindBtn = (id, key) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; });
+                el.addEventListener('touchend', e => { e.preventDefault(); keys[key] = false; });
+            };
+            bindBtn('dpad-up', 'arrowup');
+            bindBtn('dpad-down', 'arrowdown');
+            bindBtn('dpad-left', 'arrowleft');
+            bindBtn('dpad-right', 'arrowright');
+
+            const dashEl = document.getElementById('touch-dash');
+            if (dashEl) {
+                dashEl.addEventListener('touchstart', e => {
+                    e.preventDefault();
+                    if (player.dashCooldown <= 0 && !gameOver) {
+                        player.vx *= 3.0;
+                        player.vy *= 3.0;
+                        player.dashCooldown = 30;
+                        createExplosion(player.x, player.y, '#00f3ff', 14);
+                        sfxDash();
+                    }
+                });
+            }
+        }
+        setupTouch();
+
+        function restartGame() {
+            score = 0;
+            level = 1;
+            shield = 100;
+            gameOver = false;
+            player.x = 400;
+            player.y = 240;
+            player.vx = 0;
+            player.vy = 0;
+            spawnNodes(6);
+            spawnSentinels(3);
+        }
+
+        spawnNodes(6);
+        spawnSentinels(3);
+
+        function update() {
+            if (gameOver) return;
+
+            if (keys['w'] || keys['arrowup']) player.vy -= player.speed * 0.25;
+            if (keys['s'] || keys['arrowdown']) player.vy += player.speed * 0.25;
+            if (keys['a'] || keys['arrowleft']) player.vx -= player.speed * 0.25;
+            if (keys['d'] || keys['arrowright']) player.vx += player.speed * 0.25;
+
+            player.vx *= player.friction;
+            player.vy *= player.friction;
+            player.x += player.vx;
+            player.y += player.vy;
+
+            if (player.x < player.radius) { player.x = player.radius; player.vx *= -0.5; }
+            if (player.x > canvas.width - player.radius) { player.x = canvas.width - player.radius; player.vx *= -0.5; }
+            if (player.y < player.radius) { player.y = player.radius; player.vy *= -0.5; }
+            if (player.y > canvas.height - player.radius) { player.y = canvas.height - player.radius; player.vy *= -0.5; }
+
+            if (player.dashCooldown > 0) player.dashCooldown--;
+
+            // Pick up Data Nodes
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const n = nodes[i];
+                const dist = Math.hypot(player.x - n.x, player.y - n.y);
+                if (dist < player.radius + n.radius) {
+                    nodes.splice(i, 1);
+                    score += 100 * level;
+                    createExplosion(n.x, n.y, '#00f3ff', 14);
+                    sfxCollect();
+                }
+            }
+
+            if (nodes.length === 0) {
+                level++;
+                shield = Math.min(100, shield + 25);
+                sfxWinLevel();
+                spawnNodes(6 + level * 2);
+                spawnSentinels(2 + level);
+                createExplosion(player.x, player.y, '#b026ff', 30);
+            }
+
+            // Sentinels Movement & Collision
+            sentinels.forEach(s => {
+                s.x += s.vx;
+                s.y += s.vy;
+                if (s.x < s.radius || s.x > canvas.width - s.radius) s.vx *= -1;
+                if (s.y < s.radius || s.y > canvas.height - s.radius) s.vy *= -1;
+
+                const dist = Math.hypot(player.x - s.x, player.y - s.y);
+                if (dist < player.radius + s.radius) {
+                    shield -= 2.2;
+                    createExplosion((player.x + s.x) / 2, (player.y + s.y) / 2, '#ff0055', 4);
+                    if (Math.random() < 0.25) sfxExplosion();
+                    if (shield <= 0) {
+                        shield = 0;
+                        gameOver = true;
+                        sfxExplosion();
+                        createExplosion(player.x, player.y, '#ff0055', 45);
+                    }
+                }
+            });
+
+            // Particles Update
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            hudScore.innerText = score;
+            hudLevel.innerText = level;
+            hudShield.innerText = Math.round(shield) + '%';
+            hudShield.style.color = shield > 35 ? 'var(--cyan)' : 'var(--magenta)';
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(2, 4, 10, 0.25)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid lines
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.04)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            // Draw Data Nodes
+            nodes.forEach(n => {
+                n.pulse += 0.08;
+                const r = n.radius + Math.sin(n.pulse) * 2;
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#00f3ff';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw Sentinels
+            sentinels.forEach(s => {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff0055';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff0055';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius * 0.45, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+            });
+
+            // Draw Player Drone
+            if (!gameOver) {
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+                ctx.fillStyle = player.dashCooldown > 0 ? '#b026ff' : '#00f3ff';
+                ctx.shadowBlur = 18;
+                ctx.shadowColor = player.dashCooldown > 0 ? '#b026ff' : '#00f3ff';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                ctx.arc(player.x + player.vx * 2, player.y + player.vy * 2, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+            }
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2.5 * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            });
+
+            // Game Over Screen
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#ff0055';
+                ctx.font = 'bold 32px Courier New';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#ff0055';
+                ctx.fillText('CORE OVERRIDE: TERMINATED', canvas.width / 2, canvas.height / 2 - 20);
+
+                ctx.fillStyle = '#00f3ff';
+                ctx.font = '16px Courier New';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#00f3ff';
+                ctx.fillText('SCORE: ' + score + ' | LEVEL: ' + level, canvas.width / 2, canvas.height / 2 + 25);
+                ctx.fillText('PRESS [R] OR RESTART TO REBOOT', canvas.width / 2, canvas.height / 2 + 60);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        requestAnimationFrame(gameLoop);
+
+        // Live Hot-Reload Simulator
+        function applyTweak(type) {
+            if (type === 'speed') {
+                player.speed += 1.6;
+                showNotification('⚡ [HOT-RELOAD] Drone speed increased to ' + player.speed.toFixed(1));
+            } else if (type === 'particles') {
+                particleTrailMultiplier = 3.0;
+                showNotification('💥 [HOT-RELOAD] Particle emitter multiplied 3x');
+            } else if (type === 'shield') {
+                shield = 150;
+                showNotification('🌌 [HOT-RELOAD] Shield overcharged to 150%');
+            } else if (type === 'threat') {
+                sentinels.forEach(s => { s.vx *= 1.4; s.vy *= 1.4; });
+                showNotification('👾 [HOT-RELOAD] Sentinel velocity increased +40%');
+            }
+        }
+
+        function applyCustomTweak() {
+            const input = document.getElementById('customTweakInput');
+            const val = input.value.trim();
+            if (!val) return;
+            showNotification('🎙️ [HOT-RELOAD VIA WISPR]: "' + val + '" injected live!');
+            player.speed += 1.0;
+            particleTrailMultiplier += 1.0;
+            input.value = '';
+        }
+
+        function showNotification(msg) {
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.bottom = '24px';
+            div.style.right = '24px';
+            div.style.background = '#0b1120';
+            div.style.border = '1px solid var(--purple)';
+            div.style.color = '#fff';
+            div.style.padding = '12px 18px';
+            div.style.borderRadius = '8px';
+            div.style.fontFamily = 'var(--font-mono)';
+            div.style.fontSize = '12px';
+            div.style.boxShadow = '0 0 20px rgba(176,38,255,0.4)';
+            div.style.zIndex = '999';
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3200);
+        }
+
+        // ==============================================
+        // SRE INCIDENT WAR ROOM SIMULATOR (TRACK 1)
+        // ==============================================
+        let mttrSeconds = 0;
+        let mttrInterval = null;
+
+        function addChatMessage(author, role, text, type = 'standard', diff = null) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + type;
+
+            let color = 'var(--cyan)';
+            if (type === 'alert') color = 'var(--magenta)';
+            if (type === 'triage') color = 'var(--purple)';
+            if (type === 'repro') color = 'var(--yellow)';
+            if (type === 'resolved') color = 'var(--green)';
+
+            const time = new Date().toTimeString().split(' ')[0];
+            let diffHtml = '';
+            if (diff) {
+                diffHtml = `<div class="diff-code">${diff}</div>`;
+            }
+
+            div.innerHTML = `
+                <div class="msg-author" style="color: ${color}">
+                    <span>${author} (${role})</span>
+                    <span style="color: var(--text-muted); font-size: 11px;">${time}</span>
+                </div>
+                <div>${text}</div>
+                ${diffHtml}
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sreStep1() {
+            document.getElementById('metric-error-rate').innerText = '48.2%';
+            document.getElementById('metric-error-rate').className = 'metric-val high';
+            document.getElementById('metric-sub').innerText = 'CRITICAL SEV-1: 500s Spiking';
+            document.getElementById('sre-status-pill').innerText = '🚨 INCIDENT ACTIVE';
+            document.getElementById('sre-status-pill').style.color = 'var(--magenta)';
+
+            mttrSeconds = 0;
+            if (mttrInterval) clearInterval(mttrInterval);
+            mttrInterval = setInterval(() => {
+                mttrSeconds++;
+                const mins = Math.floor(mttrSeconds / 60);
+                const secs = mttrSeconds % 60;
+                document.getElementById('metric-mttr').innerText = `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+            }, 1000);
+
+            addChatMessage(
+                'Sam', 'On-Call Engineer',
+                '@sre-triager checkout is failing since this morning. 500s spiking on cart. Can you look?',
+                'alert'
+            );
+
+            document.getElementById('btn-step-1').disabled = true;
+            document.getElementById('btn-step-2').disabled = false;
+            document.getElementById('btn-step-2').className = 'sre-step-btn primary';
+        }
+
+        function sreStep2() {
+            addChatMessage(
+                'SRE Triager', 'Autonomous Agent',
+                '🚨 <b>[SEV-1 INCIDENT TRIAGED]</b> Correlated error spike with deployment <code>v2.14.0</code> landed 2 min prior. Routing to <code>@chaos-reproducer</code> for isolated sandbox execution.',
+                'triage'
+            );
+            document.getElementById('btn-step-2').disabled = true;
+            document.getElementById('btn-step-3').disabled = false;
+            document.getElementById('btn-step-3').className = 'sre-step-btn primary';
+        }
+
+        function sreStep3() {
+            addChatMessage(
+                'Chaos Reproducer', 'Autonomous Agent',
+                '🔍 <b>[ROOT CAUSE REPRODUCED IN SANDBOX sbx-3d34]</b><br>Command: <code>python3 cart_service.py</code> (runtime: 21.3ms, exit code 1)<br>Error: <code>TypeError: \'NoneType\' object is not subscriptable</code> at line 7 in <code>checkout()</code>.<br>Handing off to <code>@patch-architect</code>.',
+                'repro'
+            );
+            document.getElementById('btn-step-3').disabled = true;
+            document.getElementById('btn-step-4').disabled = false;
+            document.getElementById('btn-step-4').className = 'sre-step-btn primary';
+        }
+
+        function sreStep4() {
+            const diffText = `<span class="diff-del">--- a/cart_service.py (v2.14.0)</span>\n<span class="diff-add">+++ b/cart_service.py (v2.14.1)</span>\n@@ -5,3 +5,4 @@\n<span class="diff-del">-        coupon = discount_meta['coupon_code']</span>\n<span class="diff-add">+        if discount_meta and isinstance(discount_meta, dict):</span>\n<span class="diff-add">+            coupon = discount_meta.get('coupon_code')</span>`;
+
+            addChatMessage(
+                'Patch Architect', 'Autonomous Agent',
+                '🛠️ <b>[PATCH SYNTHESIZED & VERIFIED]</b><br>Isolated regression tests: <b>PASS (2/2 in 11.9ms)</b>.<br>PR prepared on GitHub repo. Requesting <code>@security-sentinel</code> to enforce SOC2 Dual-Custody Human Gate.',
+                'patch',
+                diffText
+            );
+
+            setTimeout(() => {
+                addChatMessage(
+                    'Security Sentinel', 'Switch Trust Gatekeeper',
+                    '🔒 <b>[SWITCH TRUST DUAL-CUSTODY GATE REQUIRED]</b><br><b>Action:</b> PRODUCTION_REMEDIATION_APPROVAL<br><b>Target:</b> cart-service cluster rollback / merge<br><b>Requires sign-off from:</b> @priya (Engineering Lead). Reply with <code>Approved. Roll it back.</code>',
+                    'gate'
+                );
+            }, 600);
+
+            document.getElementById('btn-step-4').disabled = true;
+            document.getElementById('btn-step-5').disabled = false;
+        }
+
+        function sreStep5() {
+            addChatMessage(
+                'Priya', 'Engineering Lead (via Wispr Voice)',
+                '> Spoken: "Approved. Roll it back to v2.13.2 immediately."',
+                'standard'
+            );
+
+            setTimeout(() => {
+                clearInterval(mttrInterval);
+                document.getElementById('metric-error-rate').innerText = '0.00%';
+                document.getElementById('metric-error-rate').className = 'metric-val healthy';
+                document.getElementById('metric-sub').innerText = 'Cluster healthy (0.00% 500s)';
+                document.getElementById('sre-status-pill').innerText = '● RECOVERED';
+                document.getElementById('sre-status-pill').style.color = 'var(--green)';
+
+                addChatMessage(
+                    'Security Sentinel', 'Autonomous Agent',
+                    '🚀 <b>[PRODUCTION RECOVERY CONFIRMED]</b><br>Cluster rolled back to <code>v2.13.2</code> in 2.4s. Error rate dropped from 48.2% -> 0.00%. Audit hash: <code>gate-7e76a3ed97</code> signed by @priya.<br><br>📄 <b>[INCIDENT BLAMELESS POST-MORTEM PUBLISHED]</b><br>MTTR: <b>3m 42s</b> | Root cause: Missing null check on <code>discount_meta</code>.',
+                    'resolved'
+                );
+            }, 700);
+
+            document.getElementById('btn-step-5').disabled = true;
+        }
+
+        function resetSRE() {
+            if (mttrInterval) clearInterval(mttrInterval);
+            document.getElementById('metric-error-rate').innerText = '0.02%';
+            document.getElementById('metric-error-rate').className = 'metric-val';
+            document.getElementById('metric-sub').innerText = 'Healthy state';
+            document.getElementById('metric-mttr').innerText = '0m 00s';
+            document.getElementById('sre-status-pill').innerText = 'MONITORING';
+            document.getElementById('sre-status-pill').style.color = 'var(--green)';
+
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="chat-msg">
+                    <div class="msg-author" style="color: var(--cyan);">
+                        <span>Switch Room Harness</span>
+                        <span style="color: var(--text-muted);">09:00:00</span>
+                    </div>
+                    Incident war room initialized for service <code>cart-service</code>. Ephemeral sandbox runner attached.
+                </div>
+            `;
+
+            document.getElementById('btn-step-1').disabled = false;
+            document.getElementById('btn-step-2').disabled = true;
+            document.getElementById('btn-step-3').disabled = true;
+            document.getElementById('btn-step-4').disabled = true;
+            document.getElementById('btn-step-5').disabled = true;
+            document.getElementById('btn-step-1').className = 'sre-step-btn primary';
+            document.getElementById('btn-step-2').className = 'sre-step-btn';
+            document.getElementById('btn-step-3').className = 'sre-step-btn';
+            document.getElementById('btn-step-4').className = 'sre-step-btn';
+        }
+
+        // ==============================================
+        // SUPABASE CONNECTOR SIMULATOR (TRACK 3)
+        // ==============================================
+        function simulateMcpTool(toolName) {
+            const out = document.getElementById('mcpOutput');
+            out.style.display = 'block';
+
+            if (toolName === 'query_database') {
+                out.innerText = `// POST https://mcp.supabase.com/v1/tools/query_database
+{
+  "status": "success",
+  "rows": [
+    { "id": "usr_9981", "username": "sre_lead", "role": "admin", "created_at": "2026-11-04T10:00:00Z" },
+    { "id": "usr_9982", "username": "game_designer", "role": "creator", "created_at": "2026-11-05T14:22:10Z" }
+  ],
+  "row_count": 2,
+  "execution_time_ms": 14.2
+}`;
+            } else if (toolName === 'list_tables') {
+                out.innerText = `// POST https://mcp.supabase.com/v1/tools/list_tables
+{
+  "schema": "public",
+  "tables": [
+    { "name": "incident_logs", "row_estimate": 1420, "bytes": 1048576 },
+    { "name": "game_sessions", "row_estimate": 8940, "bytes": 4194304 },
+    { "name": "dual_custody_audit_gates", "row_estimate": 312, "bytes": 262144 }
+  ]
+}`;
+            } else if (toolName === 'inspect_schema') {
+                out.innerText = `// POST https://mcp.supabase.com/v1/tools/inspect_schema (table: dual_custody_audit_gates)
+{
+  "table": "dual_custody_audit_gates",
+  "columns": [
+    { "name": "gate_id", "type": "uuid", "primary_key": true },
+    { "name": "action", "type": "varchar(64)", "nullable": false },
+    { "name": "authorized_by", "type": "varchar(64)", "nullable": false },
+    { "name": "signature_hash", "type": "varchar(128)", "nullable": false },
+    { "name": "timestamp", "type": "timestamptz", "default": "now()" }
+  ]
+}`;
+            } else if (toolName === 'get_project_health') {
+                out.innerText = `// POST https://mcp.supabase.com/v1/tools/get_project_health
+{
+  "status": "HEALTHY",
+  "pooler_active_connections": 18,
+  "cpu_utilization_pct": 8.4,
+  "ram_utilization_pct": 34.1,
+  "replication_lag_ms": 0.00
+}`;
+            }
+        }
+    </script>
+</body>
+</html>

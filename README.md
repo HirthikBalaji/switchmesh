@@ -3,11 +3,15 @@
 > **Sovereign Human-Agent Mesh with Ephemeral Verification Sandboxes & Dual-Custody Gates**  
 > *Built for the **Flip the Switch Hackathon** (WeMakeDevs x DevTools Academy x Switch) — Nov 4–7, 2026*
 
-[![Tests](https://img.shields.io/badge/tests-9%2F9%20passing-brightgreen.svg)](tests/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00f3ff?style=for-the-badge&logo=github)](https://hirthikbalaji.github.io/switchmesh/)
+[![Tests](https://img.shields.io/badge/tests-12%2F12%20passing-brightgreen.svg)](tests/)
 [![Switch Protocol](https://img.shields.io/badge/Switch-Protocol%20v2-blue.svg)](https://docs.switchagents.ai/)
 [![Wispr Flow](https://img.shields.io/badge/Wispr%20Flow-Voice%20Enabled-purple.svg)](https://wisprflow.ai/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+🌐 **Live Web Portal & Interactive Showcase:** [**https://hirthikbalaji.github.io/switchmesh/**](https://hirthikbalaji.github.io/switchmesh/)
+*Play the 60 FPS HTML5 Canvas game with Web Audio synth, run the interactive SRE Incident War Room simulator, and watch HD demo videos right in your browser!*
 
 ```
    _____         _ _       _     __  __           _     

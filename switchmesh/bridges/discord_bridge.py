@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
+import traceback
 from typing import Dict, Optional
 import discord
 from switchmesh.protocol.client import SwitchRoomHarness
@@ -63,11 +64,6 @@ class DiscordSwitchBridge:
                 for ch in g.text_channels:
                     print(f"    - #{ch.name} (ID: {ch.id})")
 
-            if len(self.client.guilds) == 0:
-                print("\n⚠️ Note: Bot has not been invited to any Discord server yet!")
-                print("👉 Use this invite link to add your bot to your Discord server:")
-                print(f"   https://discord.com/api/oauth2/authorize?client_id={self.client.user.id}&permissions=534723950656&scope=bot\n")
-
         @self.client.event
         async def on_message(message: discord.Message):
             # Ignore own messages
@@ -79,52 +75,60 @@ class DiscordSwitchBridge:
                 return
 
             author_name = message.author.display_name
-            content = message.content
+            content = message.content.strip()
+            if not content:
+                return
 
             print(f"📥 [Discord] #{message.channel.name} | {author_name}: {content}")
 
-            # 1. Forward human message to Switch harness
-            self.harness.post_message(
-                author_id=str(message.author.id),
-                author_name=author_name,
-                role=MessageRole.HUMAN,
-                content=content
-            )
+            try:
+                # 1. Forward human message to Switch harness
+                self.harness.post_message(
+                    author_id=str(message.author.id),
+                    author_name=author_name,
+                    role=MessageRole.HUMAN,
+                    content=content
+                )
 
-            # 2. Check if this resolves a pending Dual-Custody Gate
-            if "approve" in content.lower() or "reject" in content.lower():
-                resolved_gate = self.harness.resolve_gate_from_message(author_name, content)
-                if resolved_gate:
-                    if resolved_gate.outcome.value == "APPROVED" and self.workflow_type == "sre":
-                        await asyncio.sleep(1)
-                        report = self.sre_flow.sentinel.execute_post_approval_remediation(self.harness, resolved_gate)
-                        await self.post_agent_message(message.channel, "security-sentinel", "Security Sentinel (Trust Gate)", report)
-                    return
+                # 2. Check if this resolves a pending Dual-Custody Gate
+                if "approve" in content.lower() or "reject" in content.lower():
+                    resolved_gate = self.harness.resolve_gate_from_message(author_name, content)
+                    if resolved_gate:
+                        if resolved_gate.outcome.value == "APPROVED" and self.workflow_type == "sre":
+                            await asyncio.sleep(1)
+                            report = self.sre_flow.sentinel.execute_post_approval_remediation(self.harness, resolved_gate)
+                            await self.post_agent_message(message.channel, "security-sentinel", "Security Sentinel (Trust Gate)", report)
+                        return
 
-            # 3. Process workflow triggers
-            if self.workflow_type == "sre":
-                await self._handle_sre_triggers(message.channel, content, author_name)
-            else:
-                await self._handle_creative_triggers(message.channel, content, author_name)
+                # 3. Process workflow triggers
+                if self.workflow_type == "sre":
+                    await self._handle_sre_triggers(message.channel, content, author_name)
+                else:
+                    await self._handle_creative_triggers(message.channel, content, author_name)
+
+            except Exception as e:
+                print(f"❌ Error in on_message: {e}")
+                traceback.print_exc()
 
     async def _handle_sre_triggers(self, channel: discord.TextChannel, content: str, author_name: str):
         lower = content.lower()
-        if any(k in lower for k in ["checkout", "failing", "500", "alert", "error", "cart"]):
+        if any(k in lower for k in ["checkout", "failing", "500", "alert", "error", "cart", "bug", "crash"]):
+            print("🚀 Triggering SRE Multi-Agent Swarm for incident...")
             # Stage 2: Triage
             async with channel.typing():
-                await asyncio.sleep(1.2)
-                triage_text = self.sre_flow.triager.handle_message(self.harness.messages[-1])
+                await asyncio.sleep(1.0)
+                triage_text = await self.sre_flow.triager.handle_message_async(content)
             await self.post_agent_message(channel, "sre-triager", "SRE Triager (Agent)", triage_text)
 
             # Stage 3: Chaos Repro
             async with channel.typing():
-                await asyncio.sleep(1.8)
+                await asyncio.sleep(1.5)
                 res, repro_text = self.sre_flow.reproducer.reproduce_bug()
             await self.post_agent_message(channel, "chaos-reproducer", "Chaos Reproducer (Agent)", repro_text)
 
             # Stage 4: Patch Architect
             async with channel.typing():
-                await asyncio.sleep(1.8)
+                await asyncio.sleep(1.5)
                 res_patch, patch_text = self.sre_flow.patcher.generate_and_verify_patch()
             await self.post_agent_message(channel, "patch-architect", "Patch Architect (Agent)", patch_text)
 
@@ -134,25 +138,34 @@ class DiscordSwitchBridge:
             gate_msg = self.harness.messages[-1]
             await self.post_agent_message(channel, "security-sentinel", "Security Sentinel (Trust Gate)", gate_msg.content)
 
+        elif any(k in lower for k in ["hi", "hello", "hey", "help", "who"]):
+            greeting = (
+                f"👋 **Hello {author_name}!** I am the **SwitchMesh Autonomous SRE Incident Coordinator**.\n"
+                f"- **Active Teammates:** `@sre-triager`, `@chaos-reproducer`, `@patch-architect`, `@security-sentinel`\n"
+                f"- **Try reporting an incident:** `checkout is failing with 500 errors on cart service`\n"
+                f"- **Try testing the dual-custody gate:** Reply `Approved. Roll it back.` when prompted!"
+            )
+            await channel.send(greeting)
+
     async def _handle_creative_triggers(self, channel: discord.TextChannel, content: str, author_name: str):
         lower = content.lower()
         if any(k in lower for k in ["build", "game", "create", "arcade", "cyberglitch"]):
             # Stage 2: Worldsmith
             async with channel.typing():
-                await asyncio.sleep(1.2)
+                await asyncio.sleep(1.0)
                 bible = self.creative_flow.worldsmith.create_game_bible(content)
                 text_bible = self.creative_flow.worldsmith.format_room_presentation(bible)
             await self.post_agent_message(channel, "worldsmith", "Worldsmith (Narrative Agent)", text_bible)
 
             # Stage 3: Audio Alchemist
             async with channel.typing():
-                await asyncio.sleep(1.2)
+                await asyncio.sleep(1.0)
                 text_audio = self.creative_flow.alchemist.format_room_presentation()
             await self.post_agent_message(channel, "audio-alchemist", "Audio Alchemist (Synthesizer Agent)", text_audio)
 
             # Stage 4: Canvas Mechanic
             async with channel.typing():
-                await asyncio.sleep(1.8)
+                await asyncio.sleep(1.5)
                 url = self.creative_flow.game_server.start()
                 text_canvas = self.creative_flow.mechanic.format_room_presentation(url)
             await self.post_agent_message(channel, "canvas-mechanic", "Canvas Mechanic (Engine Agent)", text_canvas)
@@ -176,10 +189,13 @@ class DiscordSwitchBridge:
             )
 
     async def post_agent_message(self, channel: discord.TextChannel, agent_id: str, display_name: str, content: str):
-        """Posts a message using Webhook (with avatar/name) or Rich Embed fallback."""
+        """Posts a message using Webhook or Rich Embed fallback."""
+        if not content:
+            return
+
         avatar_url = AGENT_AVATARS.get(agent_id)
 
-        # Check or fetch webhook for channel
+        # 1. Try Webhook first (if permitted)
         webhook = self.channel_webhooks.get(channel.id)
         if not webhook:
             try:
@@ -192,21 +208,32 @@ class DiscordSwitchBridge:
         if webhook:
             try:
                 await webhook.send(
-                    content=content,
+                    content=content[:2000],
                     username=display_name,
                     avatar_url=avatar_url
                 )
+                print(f"📤 Sent via Webhook: {display_name}")
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"⚠️ Webhook send failed: {e}")
 
-        # Fallback to bot embed
-        embed = discord.Embed(
-            description=content,
-            color=0x00f3ff if "patch" in agent_id or "mechanic" in agent_id else 0xff0055
-        )
-        embed.set_author(name=display_name, icon_url=avatar_url)
-        await channel.send(embed=embed)
+        # 2. Try Embed fallback
+        try:
+            embed = discord.Embed(
+                description=content[:4000],
+                color=0x00f3ff if "patch" in agent_id or "mechanic" in agent_id else 0xff0055
+            )
+            embed.set_author(name=display_name, icon_url=avatar_url)
+            await channel.send(embed=embed)
+            print(f"📤 Sent via Embed: {display_name}")
+            return
+        except Exception as e:
+            print(f"⚠️ Embed send failed: {e}; attempting plain text fallback")
+
+        # 3. Plain text fallback
+        for i in range(0, len(content), 1900):
+            await channel.send(f"**[{display_name}]**\n{content[i:i+1900]}")
+        print(f"📤 Sent via Plain Text: {display_name}")
 
     def run(self):
         self.client.run(self.bot_token)

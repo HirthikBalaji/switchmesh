@@ -1,11 +1,11 @@
 """
 Patch Architect Agent.
 Synthesizes verified code remediation, runs regression test suites in the Ephemeral Sandbox,
-and drafts the dual remediation plan (Instant Rollback vs. Verified Hotfix).
+opens real Pull Requests on GitHub for live demos, and drafts the dual remediation plan.
 """
 
 from __future__ import annotations
-from typing import Tuple
+from typing import Tuple, Optional
 from switchmesh.protocol.types import SandboxExecutionResult
 from switchmesh.sandboxes.runner import EphemeralSandbox
 
@@ -40,10 +40,12 @@ if __name__ == "__main__":
 class PatchArchitectAgent:
     def __init__(self, name: str = "patch-architect"):
         self.name = name
+        self.last_pr_url: Optional[str] = None
+        self.last_pr_number: Optional[int] = None
 
-    def generate_and_verify_patch(self) -> Tuple[SandboxExecutionResult, str]:
+    def generate_and_verify_patch(self, create_pr: bool = True) -> Tuple[SandboxExecutionResult, str]:
         """
-        Applies patch and runs test harness in an ephemeral sandbox.
+        Applies patch, runs test harness in an ephemeral sandbox, and creates real GitHub PR.
         """
         sandbox = EphemeralSandbox("cart_patch")
         sandbox.write_file("cart_service.py", PATCHED_CART_CODE)
@@ -63,15 +65,32 @@ class PatchArchitectAgent:
         )
         res.diff = diff
 
+        pr_info = ""
+        if create_pr:
+            try:
+                from switchmesh.workflows.business_sre.github_ops import create_live_pull_request
+                pr_url, pr_num = create_live_pull_request()
+                self.last_pr_url = pr_url
+                self.last_pr_number = pr_num
+                pr_info = (
+                    f"\n- 📦 **REAL GITHUB PULL REQUEST CREATED:**\n"
+                    f"  **PR Link:** `{pr_url}`\n"
+                    f"  **Status:** `OPEN (UNMERGED)`\n"
+                    f"  👉 *Inspect GitHub right now: the PR is open and unmerged!*"
+                )
+            except Exception as e:
+                pr_info = f"\n- **GitHub Live PR:** (Local simulation: {e})"
+
         report = (
             f"🛠️ **[PATCH SYNTHESIZED & VERIFIED IN SANDBOX `{res.sandbox_id}`]**\n"
             f"- **Sandbox Status:** `VERIFIED_PASS` (Runtime: {res.duration_ms}ms)\n"
             f"- **Regression Test Output:** `{res.stdout}`\n"
             f"- **Git Diff Preview:**\n"
-            f"```diff\n{diff}```\n"
+            f"```diff\n{diff}```"
+            f"{pr_info}\n"
             f"- **Dual Remediation Option:**\n"
-            f"  1. **Option A (Fastest Recovery):** Rollback cluster to stable `v2.13.2` (Est. downtime: 35s).\n"
-            f"  2. **Option B (Forward Hotfix):** Deploy verified `v2.14.1` with regression tests.\n"
+            f"  1. **Option A (Forward Merge):** Merge verified PR to main branch.\n"
+            f"  2. **Option B (Instant Rollback):** Rollback cluster to stable `v2.13.2`.\n"
             f"- `@security-sentinel`: Please initiate Dual-Custody Human Gate for sign-off."
         )
         return res, report

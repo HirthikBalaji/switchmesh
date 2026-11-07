@@ -61,9 +61,9 @@ class SREWarRoomWorkflow:
         )
         return msg, res.model_dump()
 
-    def run_stage_4_patch(self) -> Tuple[RoomMessage, Dict]:
+    def run_stage_4_patch(self, create_pr: bool = False) -> Tuple[RoomMessage, Dict]:
         """Patch architect creates and verifies fix in sandbox."""
-        res, patch_text = self.patcher.generate_and_verify_patch()
+        res, patch_text = self.patcher.generate_and_verify_patch(create_pr=create_pr)
         msg = self.harness.post_message(
             author_id=self.patcher.name,
             author_name="Patch Architect (Agent)",
@@ -75,7 +75,12 @@ class SREWarRoomWorkflow:
 
     def run_stage_5_gate(self, approver: str = "priya") -> RoomMessage:
         """Security sentinel initiates the dual-custody approval gate."""
-        self.sentinel.request_production_gate(self.harness, approver=approver)
+        self.sentinel.request_production_gate(
+            self.harness,
+            approver=approver,
+            pr_number=self.patcher.last_pr_number,
+            pr_url=self.patcher.last_pr_url
+        )
         return self.harness.messages[-1]
 
     def run_stage_6_human_approval(self, approver: str = "priya", approval_text: str = "Approved. Roll it back.") -> RoomMessage:

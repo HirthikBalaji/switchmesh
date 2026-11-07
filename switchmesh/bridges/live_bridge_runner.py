@@ -43,12 +43,19 @@ def main():
         default="sre",
         help="Workflow type: 'sre' (Production Incident) or 'creative' (Game Studio)"
     )
+    parser.add_argument(
+        "--delay",
+        type=int,
+        default=int(os.getenv("AGENT_DELAY_SECONDS", "60")),
+        help="Delay in seconds between agent turns in deterministic mode (default: 60)"
+    )
     args = parser.parse_args()
 
     load_env_file()
 
     platform = args.platform
     workflow = args.workflow
+    delay = args.delay
 
     if platform == "interactive":
         console.clear()
@@ -86,7 +93,7 @@ def main():
         else:
             channel = int(channel)
 
-        bridge = DiscordSwitchBridge(token, channel, workflow_type=workflow)
+        bridge = DiscordSwitchBridge(token, channel, workflow_type=workflow, delay_seconds=delay)
         bridge.run()
 
     elif platform == "slack":
@@ -104,7 +111,7 @@ def main():
                 console.print("[red]Aborted. Check .env.example for Slack setup steps.[/red]")
                 return
 
-        bridge = SlackSwitchBridge(bot_token, app_token, channel, workflow_type=workflow)
+        bridge = SlackSwitchBridge(bot_token, app_token, channel, workflow_type=workflow, delay_seconds=delay)
         asyncio.run(bridge.start())
 
     elif platform == "telegram":

@@ -2,6 +2,7 @@
 Real Discord Platform Bridge for SwitchMesh.
 Connects a real Discord bot to Switch rooms, enabling multi-agent collaboration
 where each agent speaks with its own persona and avatar via Webhooks or Rich Embeds.
+Supports real GitHub Pull Request creation, human approval gating, and auto-merging!
 """
 
 from __future__ import annotations
@@ -27,17 +28,22 @@ AGENT_AVATARS = {
     "game-critic": "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
 }
 
+# Configurable agent delay for realistic deterministic cadence (1 to 2 minutes)
+DEFAULT_DELAY = int(os.getenv("AGENT_DELAY_SECONDS", "60"))
+
 
 class DiscordSwitchBridge:
     def __init__(
         self,
         bot_token: str,
         channel_id: Optional[int] = None,
-        workflow_type: str = "sre"
+        workflow_type: str = "sre",
+        delay_seconds: int = DEFAULT_DELAY
     ):
         self.bot_token = bot_token
         self.target_channel_id = channel_id if channel_id and channel_id > 0 else None
         self.workflow_type = workflow_type
+        self.delay_seconds = delay_seconds
 
         # Initialize Switch Workflow
         if workflow_type == "sre":
@@ -58,6 +64,7 @@ class DiscordSwitchBridge:
         @self.client.event
         async def on_ready():
             print(f"✅ Discord Bridge Connected as {self.client.user} (ID: {self.client.user.id})")
+            print(f"⏱️ Agent Response Delay set to: {self.delay_seconds}s (Deterministic pacing)")
             print(f"📡 Bot is member of {len(self.client.guilds)} server(s):")
             for g in self.client.guilds:
                 print(f"  • Guild: '{g.name}' (ID: {g.id})")
@@ -91,11 +98,11 @@ class DiscordSwitchBridge:
                 )
 
                 # 2. Check if this resolves a pending Dual-Custody Gate
-                if "approve" in content.lower() or "reject" in content.lower():
+                if any(w in content.lower() for w in ["approve", "reject", "merge", "roll back", "rollback"]):
                     resolved_gate = self.harness.resolve_gate_from_message(author_name, content)
                     if resolved_gate:
                         if resolved_gate.outcome.value == "APPROVED" and self.workflow_type == "sre":
-                            await asyncio.sleep(1)
+                            await channel_typing_wait(message.channel, min(10, self.delay_seconds))
                             report = self.sre_flow.sentinel.execute_post_approval_remediation(self.harness, resolved_gate)
                             await self.post_agent_message(message.channel, "security-sentinel", "Security Sentinel (Trust Gate)", report)
                         return
@@ -113,28 +120,31 @@ class DiscordSwitchBridge:
     async def _handle_sre_triggers(self, channel: discord.TextChannel, content: str, author_name: str):
         lower = content.lower()
         if any(k in lower for k in ["checkout", "failing", "500", "alert", "error", "cart", "bug", "crash"]):
-            print("🚀 Triggering SRE Multi-Agent Swarm for incident...")
+            print(f"🚀 Triggering SRE Multi-Agent Swarm with {self.delay_seconds}s realistic cadence...")
+
             # Stage 2: Triage
-            async with channel.typing():
-                await asyncio.sleep(1.0)
-                triage_text = await self.sre_flow.triager.handle_message_async(content)
+            await channel_typing_wait(channel, self.delay_seconds, "SRE Triager is analyzing telemetry & git log...")
+            triage_text = await self.sre_flow.triager.handle_message_async(content)
             await self.post_agent_message(channel, "sre-triager", "SRE Triager (Agent)", triage_text)
 
             # Stage 3: Chaos Repro
-            async with channel.typing():
-                await asyncio.sleep(1.5)
-                res, repro_text = self.sre_flow.reproducer.reproduce_bug()
+            await channel_typing_wait(channel, self.delay_seconds, "Chaos Reproducer is executing isolated ephemeral sandbox...")
+            res, repro_text = self.sre_flow.reproducer.reproduce_bug()
             await self.post_agent_message(channel, "chaos-reproducer", "Chaos Reproducer (Agent)", repro_text)
 
             # Stage 4: Patch Architect
-            async with channel.typing():
-                await asyncio.sleep(1.5)
-                res_patch, patch_text = self.sre_flow.patcher.generate_and_verify_patch()
+            await channel_typing_wait(channel, self.delay_seconds, "Patch Architect is writing regression tests & opening Pull Request on GitHub...")
+            res_patch, patch_text = self.sre_flow.patcher.generate_and_verify_patch(create_pr=True)
             await self.post_agent_message(channel, "patch-architect", "Patch Architect (Agent)", patch_text)
 
             # Stage 5: Dual Custody Gate
-            await asyncio.sleep(1.0)
-            gate = self.sre_flow.sentinel.request_production_gate(self.harness, approver=author_name)
+            await asyncio.sleep(2.0)
+            gate = self.sre_flow.sentinel.request_production_gate(
+                self.harness,
+                approver=author_name,
+                pr_number=self.sre_flow.patcher.last_pr_number,
+                pr_url=self.sre_flow.patcher.last_pr_url
+            )
             gate_msg = self.harness.messages[-1]
             await self.post_agent_message(channel, "security-sentinel", "Security Sentinel (Trust Gate)", gate_msg.content)
 
@@ -142,8 +152,9 @@ class DiscordSwitchBridge:
             greeting = (
                 f"👋 **Hello {author_name}!** I am the **SwitchMesh Autonomous SRE Incident Coordinator**.\n"
                 f"- **Active Teammates:** `@sre-triager`, `@chaos-reproducer`, `@patch-architect`, `@security-sentinel`\n"
-                f"- **Try reporting an incident:** `checkout is failing with 500 errors on cart service`\n"
-                f"- **Try testing the dual-custody gate:** Reply `Approved. Roll it back.` when prompted!"
+                f"- **Live Demo Repository:** https://github.com/HirthikBalaji/cart-service-demo (Check main branch: code is broken and 0 PRs exist!)\n"
+                f"- **Trigger the incident response:** Type `checkout is failing with 500 errors on cart service`\n"
+                f"- **Realistic Agent Delay:** `{self.delay_seconds}s` per stage to showcase live to judges!"
             )
             await channel.send(greeting)
 
@@ -151,27 +162,24 @@ class DiscordSwitchBridge:
         lower = content.lower()
         if any(k in lower for k in ["build", "game", "create", "arcade", "cyberglitch"]):
             # Stage 2: Worldsmith
-            async with channel.typing():
-                await asyncio.sleep(1.0)
-                bible = self.creative_flow.worldsmith.create_game_bible(content)
-                text_bible = self.creative_flow.worldsmith.format_room_presentation(bible)
+            await channel_typing_wait(channel, min(15, self.delay_seconds), "Worldsmith is writing Game Bible & mechanics...")
+            bible = self.creative_flow.worldsmith.create_game_bible(content)
+            text_bible = self.creative_flow.worldsmith.format_room_presentation(bible)
             await self.post_agent_message(channel, "worldsmith", "Worldsmith (Narrative Agent)", text_bible)
 
             # Stage 3: Audio Alchemist
-            async with channel.typing():
-                await asyncio.sleep(1.0)
-                text_audio = self.creative_flow.alchemist.format_room_presentation()
+            await channel_typing_wait(channel, min(15, self.delay_seconds), "Audio Alchemist is synthesizing Web Audio oscillators...")
+            text_audio = self.creative_flow.alchemist.format_room_presentation()
             await self.post_agent_message(channel, "audio-alchemist", "Audio Alchemist (Synthesizer Agent)", text_audio)
 
             # Stage 4: Canvas Mechanic
-            async with channel.typing():
-                await asyncio.sleep(1.5)
-                url = self.creative_flow.game_server.start()
-                text_canvas = self.creative_flow.mechanic.format_room_presentation(url)
+            await channel_typing_wait(channel, min(20, self.delay_seconds), "Canvas Mechanic is compiling HTML5 engine...")
+            url = self.creative_flow.game_server.start()
+            text_canvas = self.creative_flow.mechanic.format_room_presentation(url)
             await self.post_agent_message(channel, "canvas-mechanic", "Canvas Mechanic (Engine Agent)", text_canvas)
 
             # Stage 5: Game Critic
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(2.0)
             game_html = self.creative_flow.mechanic.generate_html5_game()
             eval_data = self.creative_flow.critic.evaluate_game_balance(game_html)
             text_critic = self.creative_flow.critic.format_room_presentation(eval_data)
@@ -179,7 +187,7 @@ class DiscordSwitchBridge:
 
         elif any(k in lower for k in ["speed", "particle", "color", "tweak", "hot-reload"]):
             async with channel.typing():
-                await asyncio.sleep(1.0)
+                await asyncio.sleep(2.0)
                 self.creative_flow.run_stage_6_creator_tweak(content)
             await self.post_agent_message(
                 channel,
@@ -237,3 +245,13 @@ class DiscordSwitchBridge:
 
     def run(self):
         self.client.run(self.bot_token)
+
+
+async def channel_typing_wait(channel: discord.TextChannel, duration_seconds: int, status_notice: str = ""):
+    """Shows typing indicator and waits for the configured duration."""
+    if status_notice and duration_seconds >= 10:
+        await channel.send(f"⏳ *{status_notice} (Realistic cadence: ~{duration_seconds}s)*")
+    chunks = max(1, duration_seconds // 8)
+    for _ in range(chunks):
+        async with channel.typing():
+            await asyncio.sleep(min(8, duration_seconds / chunks))

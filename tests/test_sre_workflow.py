@@ -24,8 +24,8 @@ def test_full_sre_incident_lifecycle():
     assert repro_data["exit_code"] == 1
     assert "ROOT CAUSE REPRODUCED" in m3.content
 
-    # 4. Patch
-    m4, patch_data = workflow.run_stage_4_patch()
+    # 4. Patch (offline for unit test)
+    m4, patch_data = workflow.run_stage_4_patch(create_pr=False)
     assert patch_data["verified"] is True
     assert patch_data["exit_code"] == 0
     assert "PATCH SYNTHESIZED & VERIFIED" in m4.content
@@ -40,5 +40,5 @@ def test_full_sre_incident_lifecycle():
 
     # Verify final messages contain resolution and post-mortem
     final_messages = workflow.harness.messages
-    assert any("PRODUCTION ROLLBACK COMPLETED SUCCESSFULLY" in m.content for m in final_messages)
+    assert any("PRODUCTION REMEDIATION COMPLETED SUCCESSFULLY" in m.content or "PRODUCTION ROLLBACK COMPLETED SUCCESSFULLY" in m.content for m in final_messages)
     assert any("INCIDENT BLAMELESS POST-MORTEM" in m.content for m in final_messages)

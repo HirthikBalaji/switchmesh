@@ -3,7 +3,8 @@
 > **Project Name:** SwitchMesh: Sovereign Human-Agent War Room & Creative Studio  
 > **Tagline:** Verifiable multi-agent autonomy in team chat with ephemeral sandboxes, dual-custody governance, and voice steering.  
 > **Repository:** `https://github.com/HirthikBalaji/switchmesh`  
-> **Demo Video Link:** `https://youtu.be/<your-demo-video>` (or Loom link)  
+> **Demo Video Link:** `https://youtu.be/Iq0RxWVdNKM`  
+> **Live Web Portal:** `https://hirthikbalaji.github.io/switchmesh/`  
 > **Blog Post Link:** [Read the full technical deep dive](submission/BLOG_POST.md)  
 > **Wispr Usage Scorecard:** Attached in `wispr_flow/wispr_scorecard.png`
 

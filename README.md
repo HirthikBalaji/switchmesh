@@ -4,13 +4,15 @@
 > *Built for the **Flip the Switch Hackathon** (WeMakeDevs x DevTools Academy x Switch) — Nov 4–7, 2026*
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00f3ff?style=for-the-badge&logo=github)](https://hirthikbalaji.github.io/switchmesh/)
+[![YouTube Demo](https://img.shields.io/badge/YouTube-Watch%20Demo%20Video-ff0000?style=for-the-badge&logo=youtube)](https://youtu.be/Iq0RxWVdNKM)
 [![Tests](https://img.shields.io/badge/tests-12%2F12%20passing-brightgreen.svg)](tests/)
 [![Switch Protocol](https://img.shields.io/badge/Switch-Protocol%20v2-blue.svg)](https://docs.switchagents.ai/)
 [![Wispr Flow](https://img.shields.io/badge/Wispr%20Flow-Voice%20Enabled-purple.svg)](https://wisprflow.ai/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-🌐 **Live Web Portal & Interactive Showcase:** [**https://hirthikbalaji.github.io/switchmesh/**](https://hirthikbalaji.github.io/switchmesh/)
+📺 **Official 3-Minute Demo Video:** [**https://youtu.be/Iq0RxWVdNKM**](https://youtu.be/Iq0RxWVdNKM)  
+🌐 **Live Web Portal & Interactive Showcase:** [**https://hirthikbalaji.github.io/switchmesh/**](https://hirthikbalaji.github.io/switchmesh/)  
 *Play the 60 FPS HTML5 Canvas game with Web Audio synth, run the interactive SRE Incident War Room simulator, and watch HD demo videos right in your browser!*
 
 ```
@@ -175,6 +177,13 @@ Located in [`core_contribution/`](core_contribution/):
 
 ## 🎬 Video Walkthroughs & Terminal Recordings
 
+### 📺 Watch the Official Hackathon Demo on YouTube
+[![Watch Demo Video](https://img.shields.io/badge/YouTube-Watch%20Demo%20Video%20(3m%2042s)-ff0000?style=for-the-badge&logo=youtube)](https://youtu.be/Iq0RxWVdNKM)  
+👉 **Direct Link:** [**https://youtu.be/Iq0RxWVdNKM**](https://youtu.be/Iq0RxWVdNKM)
+
+---
+
+### 📼 Local MP4 Videos & Terminal Asciicasts
 Every track has high-definition **MP4 videos** and terminal **asciicasts** in [`recordings/`](recordings/):
 
 | Track / Showcase | MP4 Video File | Asciinema Cast | Duration |

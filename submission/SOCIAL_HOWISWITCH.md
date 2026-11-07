@@ -82,7 +82,8 @@ Meet SwitchMesh, powered by @SwitchAgentsAI:
 ✅ Track 3: Official Supabase Core Connector PR
 ✅ Voice-driven with @WisprFlow
 
-Watch the 3-minute demo video: [Link]
+Watch the 3-minute demo video: https://youtu.be/Iq0RxWVdNKM
+Live Interactive Web Showcase: https://hirthikbalaji.github.io/switchmesh/
 GitHub: https://github.com/HirthikBalaji/switchmesh
 
 #HowISwitch #FliptheSwitch @kunalstwt @DevToolsAcademy

@@ -3,7 +3,8 @@
 > **Flip the Switch Hackathon 2026 Entry — Side Track: Best Blog (AirPods 5)**  
 > *Author: Hirthik Balaji & The SwitchMesh Team*  
 > *Published: November 2026*  
-> *Target Tracks: Track 01 ($2,000 Business) · Track 02 ($2,000 Creative) · Track 03 ($100 Core Contribution) · Code with Wispr ($500)*
+> *Target Tracks: Track 01 ($2,000 Business) · Track 02 ($2,000 Creative) · Track 03 ($100 Core Contribution) · Code with Wispr ($500)*  
+> *Demo Video: [Watch the 3-minute walkthrough on YouTube](https://youtu.be/Iq0RxWVdNKM) · Live Portal: [https://hirthikbalaji.github.io/switchmesh/](https://hirthikbalaji.github.io/switchmesh/)*
 
 ---
 

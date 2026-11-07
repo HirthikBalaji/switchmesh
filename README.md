@@ -169,19 +169,20 @@ Located in [`core_contribution/`](core_contribution/):
 
 ---
 
-## 📼 Asciinema Terminal Recordings
+## 🎬 Video Walkthroughs & Terminal Recordings
 
-Every track has a recorded asciicast in [`recordings/`](recordings/) that you can play back directly in your terminal or web player:
+Every track has high-definition **MP4 videos** and terminal **asciicasts** in [`recordings/`](recordings/):
 
+| Track / Showcase | MP4 Video File | Asciinema Cast | Duration |
+| :--- | :--- | :--- | :--- |
+| **Combined Full Showcase** | [`switchmesh_full_demo.mp4`](recordings/switchmesh_full_demo.mp4) | — | 47s |
+| **Track 1: Business SRE** | [`track1_sre_warroom.mp4`](recordings/track1_sre_warroom.mp4) | [`track1_sre_warroom.cast`](recordings/track1_sre_warroom.cast) | 19s |
+| **Track 2: Creative Studio** | [`track2_creative_studio.mp4`](recordings/track2_creative_studio.mp4) | [`track2_creative_studio.cast`](recordings/track2_creative_studio.cast) | 18s |
+| **Track 3: Supabase Core & Tests** | [`track3_test_suite.mp4`](recordings/track3_test_suite.mp4) | [`track3_test_suite.cast`](recordings/track3_test_suite.cast) | 10s |
+
+### Quick Terminal Playback:
 ```bash
-# Track 1: Autonomous SRE Incident War Room
-asciinema play recordings/track1_sre_warroom.cast
-
-# Track 2: Creative Studio Voice-to-Playable Game Engine
-asciinema play recordings/track2_creative_studio.cast
-
-# Track 3: Supabase Core Contribution & 100% Passing Test Suite
-asciinema play recordings/track3_test_suite.cast
+asciinema play recordings/switchmesh_full_demo.cast  # or any of the .cast files
 ```
 
 ---

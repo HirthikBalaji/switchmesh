@@ -65,7 +65,7 @@ Here is how we solved the three hardest problems in agent collaboration:
 
 We also contributed the official Supabase connector to Switch's open-source core!
 
-Check out the architecture and live demo here: [GitHub Link]
+Check out the architecture and live demo here: https://github.com/HirthikBalaji/switchmesh
 #HowISwitch #SoftwareEngineering #MultiAgent #DevOps #WeMakeDevs
 ```
 
@@ -83,7 +83,7 @@ Meet SwitchMesh, powered by @SwitchAgentsAI:
 ✅ Voice-driven with @WisprFlow
 
 Watch the 3-minute demo video: [Link]
-GitHub: [Link]
+GitHub: https://github.com/HirthikBalaji/switchmesh
 
 #HowISwitch #FliptheSwitch @kunalstwt @DevToolsAcademy
 ```

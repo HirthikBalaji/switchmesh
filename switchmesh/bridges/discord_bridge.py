@@ -31,11 +31,11 @@ class DiscordSwitchBridge:
     def __init__(
         self,
         bot_token: str,
-        channel_id: int,
+        channel_id: Optional[int] = None,
         workflow_type: str = "sre"
     ):
         self.bot_token = bot_token
-        self.channel_id = channel_id
+        self.target_channel_id = channel_id if channel_id and channel_id > 0 else None
         self.workflow_type = workflow_type
 
         # Initialize Switch Workflow
@@ -49,8 +49,7 @@ class DiscordSwitchBridge:
         intents = discord.Intents.default()
         intents.message_content = True
         self.client = discord.Client(intents=intents)
-        self.target_channel: Optional[discord.TextChannel] = None
-        self.webhook: Optional[discord.Webhook] = None
+        self.channel_webhooks: Dict[int, discord.Webhook] = {}
 
         self._setup_events()
 
@@ -58,45 +57,31 @@ class DiscordSwitchBridge:
         @self.client.event
         async def on_ready():
             print(f"✅ Discord Bridge Connected as {self.client.user} (ID: {self.client.user.id})")
-            self.target_channel = self.client.get_channel(self.channel_id)
-            if not self.target_channel:
-                try:
-                    self.target_channel = await self.client.fetch_channel(self.channel_id)
-                except Exception as e:
-                    print(f"❌ Could not fetch Discord channel {self.channel_id}: {e}")
-                    return
+            print(f"📡 Bot is member of {len(self.client.guilds)} server(s):")
+            for g in self.client.guilds:
+                print(f"  • Guild: '{g.name}' (ID: {g.id})")
+                for ch in g.text_channels:
+                    print(f"    - #{ch.name} (ID: {ch.id})")
 
-            print(f"📡 Joined Discord Channel: #{self.target_channel.name}")
-
-            # Try finding or creating a Webhook for multi-avatar agent posting
-            try:
-                webhooks = await self.target_channel.webhooks()
-                self.webhook = webhooks[0] if webhooks else await self.target_channel.create_webhook(name="SwitchMesh Bridge")
-                print(f"🔗 Multi-Agent Webhook Active: {self.webhook.name}")
-            except Exception as e:
-                print(f"⚠️ Webhook creation restricted; falling back to Embed replies: {e}")
-
-            # Post room activation notice
-            welcome = (
-                f"⚡ **SwitchMesh Multi-Agent Room Active**\n"
-                f"Mode: `{self.workflow_type.upper()}`\n"
-                f"Agents in room: " + ", ".join([f"`@{a}`" for a in self.harness.agent_registry.keys()]) + "\n"
-                f"Type a task or report to begin collaboration!"
-            )
-            await self.target_channel.send(welcome)
+            if len(self.client.guilds) == 0:
+                print("\n⚠️ Note: Bot has not been invited to any Discord server yet!")
+                print("👉 Use this invite link to add your bot to your Discord server:")
+                print(f"   https://discord.com/api/oauth2/authorize?client_id={self.client.user.id}&permissions=534723950656&scope=bot\n")
 
         @self.client.event
         async def on_message(message: discord.Message):
             # Ignore own messages
             if message.author == self.client.user:
                 return
-            if message.channel.id != self.channel_id:
+
+            # Check channel filter if specified
+            if self.target_channel_id and message.channel.id != self.target_channel_id:
                 return
 
             author_name = message.author.display_name
             content = message.content
 
-            print(f"📥 [Discord] {author_name}: {content}")
+            print(f"📥 [Discord] #{message.channel.name} | {author_name}: {content}")
 
             # 1. Forward human message to Switch harness
             self.harness.post_message(
@@ -113,89 +98,100 @@ class DiscordSwitchBridge:
                     if resolved_gate.outcome.value == "APPROVED" and self.workflow_type == "sre":
                         await asyncio.sleep(1)
                         report = self.sre_flow.sentinel.execute_post_approval_remediation(self.harness, resolved_gate)
-                        await self.post_agent_message("security-sentinel", "Security Sentinel", report)
+                        await self.post_agent_message(message.channel, "security-sentinel", "Security Sentinel (Trust Gate)", report)
                     return
 
             # 3. Process workflow triggers
             if self.workflow_type == "sre":
-                await self._handle_sre_triggers(content, author_name)
+                await self._handle_sre_triggers(message.channel, content, author_name)
             else:
-                await self._handle_creative_triggers(content, author_name)
+                await self._handle_creative_triggers(message.channel, content, author_name)
 
-    async def _handle_sre_triggers(self, content: str, author_name: str):
+    async def _handle_sre_triggers(self, channel: discord.TextChannel, content: str, author_name: str):
         lower = content.lower()
-        if "checkout" in lower or "failing" in lower or "500" in lower or "alert" in lower:
+        if any(k in lower for k in ["checkout", "failing", "500", "alert", "error", "cart"]):
             # Stage 2: Triage
-            await self.target_channel.typing()
-            await asyncio.sleep(1.5)
-            triage_text = self.sre_flow.triager.handle_message(self.harness.messages[-1])
-            await self.post_agent_message("sre-triager", "SRE Triager (Agent)", triage_text)
+            async with channel.typing():
+                await asyncio.sleep(1.2)
+                triage_text = self.sre_flow.triager.handle_message(self.harness.messages[-1])
+            await self.post_agent_message(channel, "sre-triager", "SRE Triager (Agent)", triage_text)
 
             # Stage 3: Chaos Repro
-            await self.target_channel.typing()
-            await asyncio.sleep(2.0)
-            res, repro_text = self.sre_flow.reproducer.reproduce_bug()
-            await self.post_agent_message("chaos-reproducer", "Chaos Reproducer (Agent)", repro_text)
+            async with channel.typing():
+                await asyncio.sleep(1.8)
+                res, repro_text = self.sre_flow.reproducer.reproduce_bug()
+            await self.post_agent_message(channel, "chaos-reproducer", "Chaos Reproducer (Agent)", repro_text)
 
             # Stage 4: Patch Architect
-            await self.target_channel.typing()
-            await asyncio.sleep(2.0)
-            res_patch, patch_text = self.sre_flow.patcher.generate_and_verify_patch()
-            await self.post_agent_message("patch-architect", "Patch Architect (Agent)", patch_text)
+            async with channel.typing():
+                await asyncio.sleep(1.8)
+                res_patch, patch_text = self.sre_flow.patcher.generate_and_verify_patch()
+            await self.post_agent_message(channel, "patch-architect", "Patch Architect (Agent)", patch_text)
 
             # Stage 5: Dual Custody Gate
             await asyncio.sleep(1.0)
             gate = self.sre_flow.sentinel.request_production_gate(self.harness, approver=author_name)
             gate_msg = self.harness.messages[-1]
-            await self.post_agent_message("security-sentinel", "Security Sentinel (Trust Gate)", gate_msg.content)
+            await self.post_agent_message(channel, "security-sentinel", "Security Sentinel (Trust Gate)", gate_msg.content)
 
-    async def _handle_creative_triggers(self, content: str, author_name: str):
+    async def _handle_creative_triggers(self, channel: discord.TextChannel, content: str, author_name: str):
         lower = content.lower()
-        if "build" in lower or "game" in lower or "create" in lower:
+        if any(k in lower for k in ["build", "game", "create", "arcade", "cyberglitch"]):
             # Stage 2: Worldsmith
-            await self.target_channel.typing()
-            await asyncio.sleep(1.5)
-            bible = self.creative_flow.worldsmith.create_game_bible(content)
-            text_bible = self.creative_flow.worldsmith.format_room_presentation(bible)
-            await self.post_agent_message("worldsmith", "Worldsmith (Narrative Agent)", text_bible)
+            async with channel.typing():
+                await asyncio.sleep(1.2)
+                bible = self.creative_flow.worldsmith.create_game_bible(content)
+                text_bible = self.creative_flow.worldsmith.format_room_presentation(bible)
+            await self.post_agent_message(channel, "worldsmith", "Worldsmith (Narrative Agent)", text_bible)
 
             # Stage 3: Audio Alchemist
-            await self.target_channel.typing()
-            await asyncio.sleep(1.5)
-            text_audio = self.creative_flow.alchemist.format_room_presentation()
-            await self.post_agent_message("audio-alchemist", "Audio Alchemist (Synthesizer Agent)", text_audio)
+            async with channel.typing():
+                await asyncio.sleep(1.2)
+                text_audio = self.creative_flow.alchemist.format_room_presentation()
+            await self.post_agent_message(channel, "audio-alchemist", "Audio Alchemist (Synthesizer Agent)", text_audio)
 
             # Stage 4: Canvas Mechanic
-            await self.target_channel.typing()
-            await asyncio.sleep(2.0)
-            url = self.creative_flow.game_server.start()
-            text_canvas = self.creative_flow.mechanic.format_room_presentation(url)
-            await self.post_agent_message("canvas-mechanic", "Canvas Mechanic (Engine Agent)", text_canvas)
+            async with channel.typing():
+                await asyncio.sleep(1.8)
+                url = self.creative_flow.game_server.start()
+                text_canvas = self.creative_flow.mechanic.format_room_presentation(url)
+            await self.post_agent_message(channel, "canvas-mechanic", "Canvas Mechanic (Engine Agent)", text_canvas)
 
             # Stage 5: Game Critic
             await asyncio.sleep(1.0)
             game_html = self.creative_flow.mechanic.generate_html5_game()
             eval_data = self.creative_flow.critic.evaluate_game_balance(game_html)
             text_critic = self.creative_flow.critic.format_room_presentation(eval_data)
-            await self.post_agent_message("game-critic", "Game Critic (Playtester Agent)", text_critic)
+            await self.post_agent_message(channel, "game-critic", "Game Critic (Playtester Agent)", text_critic)
 
-        elif "speed" in lower or "particle" in lower or "color" in lower or "tweak" in lower:
-            # Hot reload
-            await self.target_channel.typing()
-            await asyncio.sleep(1.0)
-            self.creative_flow.run_stage_6_creator_tweak(content)
+        elif any(k in lower for k in ["speed", "particle", "color", "tweak", "hot-reload"]):
+            async with channel.typing():
+                await asyncio.sleep(1.0)
+                self.creative_flow.run_stage_6_creator_tweak(content)
             await self.post_agent_message(
+                channel,
                 "canvas-mechanic",
-                "Canvas Mechanic",
-                f"⚡ **[HOT-RELOAD LIVE]** Applied voice tweak: '{content}'. Re-rendered 60 FPS Canvas engine at http://localhost:8800!"
+                "Canvas Mechanic (Engine Agent)",
+                f"⚡ **[HOT-RELOAD LIVE]** Applied voice tweak: '{content}'. Live 60 FPS Canvas engine re-rendered at http://localhost:8800!"
             )
 
-    async def post_agent_message(self, agent_id: str, display_name: str, content: str):
+    async def post_agent_message(self, channel: discord.TextChannel, agent_id: str, display_name: str, content: str):
         """Posts a message using Webhook (with avatar/name) or Rich Embed fallback."""
         avatar_url = AGENT_AVATARS.get(agent_id)
-        if self.webhook:
+
+        # Check or fetch webhook for channel
+        webhook = self.channel_webhooks.get(channel.id)
+        if not webhook:
             try:
-                await self.webhook.send(
+                hooks = await channel.webhooks()
+                webhook = hooks[0] if hooks else await channel.create_webhook(name="SwitchMesh Bridge")
+                self.channel_webhooks[channel.id] = webhook
+            except Exception:
+                webhook = None
+
+        if webhook:
+            try:
+                await webhook.send(
                     content=content,
                     username=display_name,
                     avatar_url=avatar_url
@@ -210,7 +206,7 @@ class DiscordSwitchBridge:
             color=0x00f3ff if "patch" in agent_id or "mechanic" in agent_id else 0xff0055
         )
         embed.set_author(name=display_name, icon_url=avatar_url)
-        await self.target_channel.send(embed=embed)
+        await channel.send(embed=embed)
 
     def run(self):
         self.client.run(self.bot_token)
